@@ -39,7 +39,7 @@ class vFeedUpdate(object):
             print '\n[info] decompressing %s ...' %self.vfeed_db_compressed
             self._uncompress()
             self.cleaning()
-            exit(0)
+
             
         if os.path.isfile(self.vfeed_db):
             print '[info] checking for the latest %s ' %self.vfeed_db

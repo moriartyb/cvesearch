@@ -23,7 +23,7 @@ class vFeed(object):
 
     def _vrfy_cve(self):
         try:
-            self.cur.execute('SELECT * FROM nvd_db WHERE cveid=?', self.query)
+            self.cur.execute('SELECT * FROM nvd_db WHERE cveid='+"\""+self.query[0]+"\"")
             self.data = self.cur.fetchone()
             if self.data is None:
                 print '[warning] Entry %s is missed from vFeed Database' % self.cveID
@@ -83,7 +83,7 @@ class vFeed(object):
             self.cvssScore['exploit'] = str(self.data[6])
             self.cvssScore['access_vector'] = str(self.data[7])
             self.cvssScore['access_complexity'] = str(self.data[8])
-            self.cvssScore['authentication'] = str(self.data[9])      
+            self.cvssScore['authentication'] = str(self.data[9])
             self.cvssScore['confidentiality_impact'] = str(self.data[10])
             self.cvssScore['integrity_impact'] = str(self.data[11])
             self.cvssScore['availability_impact'] = str(self.data[12])
@@ -97,7 +97,7 @@ class vFeed(object):
         self.cnt = 0
         self.cveReferences = {}
         self.cur.execute(
-            'SELECT * FROM cve_reference WHERE cveid=?', self.query)
+            'SELECT * FROM cve_reference WHERE cveid='+"\""+self.query[0]+"\"")
 
         for self.data in self.cur.fetchall():
             self.cveReferences[self.cnt] = {
@@ -115,15 +115,15 @@ class vFeed(object):
         self.cnt = 0
         self.OSVDB_id = {}
         self.cur.execute(
-            'SELECT * FROM map_cve_osvdb WHERE cveid=?', self.query)
+            'SELECT * FROM map_cve_osvdb WHERE cveid='+"\""+self.query[0]+"\"")
 
         for self.data in self.cur.fetchall():
             self.OSVDB_id[self.cnt] = {
                 'id': str(self.data[0]),
             }
             self.cnt += 1
-        return self.OSVDB_id        
-    
+        return self.OSVDB_id
+
     def get_scip(self):
         '''
         Returning:  SCIP ids and links as dictionay
@@ -132,7 +132,7 @@ class vFeed(object):
         self.cnt = 0
         self.SCIP_id = {}
         self.cur.execute(
-            'SELECT * FROM map_cve_scip WHERE cveid=?', self.query)
+            'SELECT * FROM map_cve_scip WHERE cveid='+"\""+self.query[0]+"\"")
 
         for self.data in self.cur.fetchall():
             self.SCIP_id[self.cnt] = {
@@ -140,7 +140,7 @@ class vFeed(object):
                 'link': str(self.data[1]),
             }
             self.cnt += 1
-        return self.SCIP_id    
+        return self.SCIP_id
 
     def get_certvn(self):
         '''
@@ -150,7 +150,7 @@ class vFeed(object):
         self.cnt = 0
         self.CERTVN_id = {}
         self.cur.execute(
-            'SELECT * FROM map_cve_certvn WHERE cveid=?', self.query)
+            'SELECT * FROM map_cve_certvn WHERE cveid='+"\""+self.query[0]+"\"")
 
         for self.data in self.cur.fetchall():
             self.CERTVN_id[self.cnt] = {
@@ -158,7 +158,7 @@ class vFeed(object):
                 'link': str(self.data[1]),
             }
             self.cnt += 1
-        return self.CERTVN_id    
+        return self.CERTVN_id
 
     def get_iavm(self):
         '''
@@ -169,7 +169,7 @@ class vFeed(object):
         self.cnt = 0
         self.IAVM_id = {}
         self.cur.execute(
-            'SELECT * FROM map_cve_iavm WHERE cveid=?', self.query)
+            'SELECT * FROM map_cve_iavm WHERE cveid='+"\""+self.query[0]+"\"")
 
         for self.data in self.cur.fetchall():
             self.IAVM_id[self.cnt] = {
@@ -178,7 +178,7 @@ class vFeed(object):
                 'title': str(self.data[2]),
             }
             self.cnt += 1
-        return self.IAVM_id   
+        return self.IAVM_id
 
     def get_cwe(self):
         '''
@@ -187,15 +187,15 @@ class vFeed(object):
         self.cnt = 0
         self.cnt2 = 0
         self.CWE_id = {}
-        
-        self.cur.execute('SELECT * FROM cve_cwe WHERE cveid=?', self.query)
-        
-        
+
+        self.cur.execute('SELECT * FROM cve_cwe WHERE cveid='+"\""+self.query[0]+"\"")
+
+
         for self.data in self.cur.fetchall():
             self.cwe_id = str(self.data[0])
             self.query2 = (self.cwe_id,)
-            self.cur.execute('SELECT * FROM cwe_db WHERE cweid=?', self.query2)
-                        
+            self.cur.execute('SELECT * FROM cwe_db WHERE cweid='+"\""+self.query2[0]+"\"")
+
             for self.data2 in self.cur.fetchall():
                 self.CWE_id[self.cnt] = {
                    'id': self.cwe_id,
@@ -210,48 +210,48 @@ class vFeed(object):
         '''
         Returning:  CAPEC references as dictionary
         '''
-        
+
         self.cnt = 0
         self.CWE_id = self.get_cwe()
         self.CAPEC_id = {}
-        
+
         if self.CWE_id:
             for i in range(0, len(self.CWE_id)):
                 self.query2 = (self.CWE_id[i]['id'],)
-                self.cur.execute('SELECT * FROM cwe_capec WHERE cweid=?', self.query2)
-                
-                for self.data2 in self.cur.fetchall():                    
+                self.cur.execute('SELECT * FROM cwe_capec WHERE cweid='+"\""+self.query2[0]+"\"")
+
+                for self.data2 in self.cur.fetchall():
                     self.cwe_id = self.CWE_id[i]['id']
-                    
+
                     self.CAPEC_id[self.cnt] = {
                        'cwe' : self.cwe_id,
                        'id': str(self.data2[0]),
                     }
-                    
+
                     self.cnt += 1
-        
+
         return self.CAPEC_id
 
 
     def get_category(self):
         '''
         Returning:  CWE Weakness Categories (as Top 2011 ....) references as dictionary
-        '''       
+        '''
         self.cnt = 0
         self.CWE_id = self.get_cwe()
         self.CATEGORY_id = {}
-        
+
         if self.CWE_id:
             for i in range(0, len(self.CWE_id)):
                 self.query2 = (self.CWE_id[i]['id'],)
-                self.cur.execute('SELECT * FROM cwe_category WHERE cweid=?', self.query2)
-                
-                for self.data2 in self.cur.fetchall():                                                            
+                self.cur.execute('SELECT * FROM cwe_category WHERE cweid='+"\""+self.query2[0]+"\"")
+
+                for self.data2 in self.cur.fetchall():
                     self.CATEGORY_id[self.cnt] = {
                        'id' : str(self.data2[0]),
                        'title': str(self.data2[1]),
                     }
-                    
+
                     self.cnt += 1
 
         return self.CATEGORY_id
@@ -262,7 +262,7 @@ class vFeed(object):
         '''
         self.cnt = 0
         self.CPE_id = {}
-        self.cur.execute('SELECT * FROM cve_cpe WHERE cveid=?', self.query)
+        self.cur.execute('SELECT * FROM cve_cpe WHERE cveid='+"\""+self.query[0]+"\"")
 
         for self.data in self.cur.fetchall():
             self.CPE_id[self.cnt] = {
@@ -278,7 +278,7 @@ class vFeed(object):
         '''
         self.cnt = 0
         self.MS_id = {}
-        self.cur.execute('SELECT * FROM map_cve_ms WHERE cveid=?', self.query)
+        self.cur.execute('SELECT * FROM map_cve_ms WHERE cveid='+"\""+self.query[0]+"\"")
 
         for self.data in self.cur.fetchall():
             self.MS_id[self.cnt] = {
@@ -288,7 +288,7 @@ class vFeed(object):
             self.cnt += 1
 
         return self.MS_id
-    
+
 
     def get_kb(self):
         '''
@@ -297,7 +297,7 @@ class vFeed(object):
         self.cnt = 0
         self.KB_id = {}
         self.cur.execute(
-            'SELECT * FROM map_cve_mskb WHERE cveid=?', self.query)
+            'SELECT * FROM map_cve_mskb WHERE cveid='+"\""+self.query[0]+"\"")
 
         for self.data in self.cur.fetchall():
             self.KB_id[self.cnt] = {
@@ -315,7 +315,7 @@ class vFeed(object):
         self.cnt = 0
         self.AIXAPAR_id = {}
         self.cur.execute(
-            'SELECT * FROM map_cve_aixapar WHERE cveid=?', self.query)
+            'SELECT * FROM map_cve_aixapar WHERE cveid='+"\""+self.query[0]+"\"")
 
         for self.data in self.cur.fetchall():
             self.AIXAPAR_id[self.cnt] = {
@@ -332,7 +332,7 @@ class vFeed(object):
         self.cnt = 0
         self.BID_id = {}
         self.cur.execute(
-            'SELECT * FROM map_cve_bid WHERE cveid=?', self.query)
+            'SELECT * FROM map_cve_bid WHERE cveid='+"\""+self.query[0]+"\"")
 
         for self.data in self.cur.fetchall():
             self.BID_id[self.cnt] = {
@@ -341,9 +341,9 @@ class vFeed(object):
             }
             self.cnt += 1
         return self.BID_id
-    
-    
-    
+
+
+
     def get_redhat(self):
         '''
         Returning:  Redhat IDs & Bugzilla
@@ -354,7 +354,7 @@ class vFeed(object):
         self.BUGZILLA_id = {}
 
         self.cur.execute(
-            'SELECT * FROM map_cve_redhat WHERE cveid=?', self.query)
+            'SELECT * FROM map_cve_redhat WHERE cveid='+"\""+self.query[0]+"\"")
 
         for self.data in self.cur.fetchall():
             self.REDHAT_id[self.cnt] = {
@@ -365,7 +365,7 @@ class vFeed(object):
 
             # Querying the mapped redhat id and bugzilla id table. New query is set.
             self.query2 = (self.REDHAT_id[self.cnt]['id'],)
-            self.cur.execute('SELECT * FROM map_redhat_bugzilla WHERE redhatid=?', self.query2)
+            self.cur.execute('SELECT * FROM map_redhat_bugzilla WHERE redhatid='+"\""+self.query2[0]+"\"")
 
             for self.data2 in self.cur.fetchall():
                 self.BUGZILLA_id[self.cnt2] = {
@@ -385,7 +385,7 @@ class vFeed(object):
         self.cnt = 0
         self.DEBIAN_id = {}
         self.cur.execute(
-            'SELECT * FROM map_cve_debian WHERE cveid=?', self.query)
+            'SELECT * FROM map_cve_debian WHERE cveid='+"\""+self.query[0]+"\"")
 
         for self.data in self.cur.fetchall():
             self.DEBIAN_id[self.cnt] = {
@@ -402,7 +402,7 @@ class vFeed(object):
         self.cnt = 0
         self.SUSE_id = {}
         self.cur.execute(
-            'SELECT * FROM map_cve_suse WHERE cveid=?', self.query)
+            'SELECT * FROM map_cve_suse WHERE cveid='+"\""+self.query[0]+"\"")
 
         for self.data in self.cur.fetchall():
             self.SUSE_id[self.cnt] = {
@@ -419,7 +419,7 @@ class vFeed(object):
         self.cnt = 0
         self.UBUNTU_id = {}
         self.cur.execute(
-            'SELECT * FROM map_cve_ubuntu WHERE cveid=?', self.query)
+            'SELECT * FROM map_cve_ubuntu WHERE cveid='+"\""+self.query[0]+"\"")
 
         for self.data in self.cur.fetchall():
             self.UBUNTU_id[self.cnt] = {
@@ -436,7 +436,7 @@ class vFeed(object):
         self.cnt = 0
         self.GENTOO_id = {}
         self.cur.execute(
-            'SELECT * FROM map_cve_gentoo WHERE cveid=?', self.query)
+            'SELECT * FROM map_cve_gentoo WHERE cveid='+"\""+self.query[0]+"\"")
 
         for self.data in self.cur.fetchall():
             self.GENTOO_id[self.cnt] = {
@@ -453,7 +453,7 @@ class vFeed(object):
         self.cnt = 0
         self.FEDORA_id = {}
         self.cur.execute(
-            'SELECT * FROM map_cve_fedora WHERE cveid=?', self.query)
+            'SELECT * FROM map_cve_fedora WHERE cveid='+"\""+self.query[0]+"\"")
 
         for self.data in self.cur.fetchall():
             self.FEDORA_id[self.cnt] = {
@@ -470,7 +470,7 @@ class vFeed(object):
         self.cnt = 0
         self.MANDRIVA_id = {}
         self.cur.execute(
-            'SELECT * FROM map_cve_mandriva WHERE cveid=?', self.query)
+            'SELECT * FROM map_cve_mandriva WHERE cveid='+"\""+self.query[0]+"\"")
 
         for self.data in self.cur.fetchall():
             self.MANDRIVA_id[self.cnt] = {
@@ -487,7 +487,7 @@ class vFeed(object):
         self.cnt = 0
         self.VMWARE_id = {}
         self.cur.execute(
-            'SELECT * FROM map_cve_vmware WHERE cveid=?', self.query)
+            'SELECT * FROM map_cve_vmware WHERE cveid='+"\""+self.query[0]+"\"")
 
         for self.data in self.cur.fetchall():
             self.VMWARE_id[self.cnt] = {
@@ -504,7 +504,7 @@ class vFeed(object):
         '''
         self.cnt = 0
         self.CISCO_id = {}
-        self.cur.execute('SELECT * FROM map_cve_cisco WHERE cveid=?', self.query)
+        self.cur.execute('SELECT * FROM map_cve_cisco WHERE cveid='+"\""+self.query[0]+"\"")
 
         for self.data in self.cur.fetchall():
             self.CISCO_id[self.cnt] = {
@@ -522,8 +522,8 @@ class vFeed(object):
         self.cnt = 0
         self.OVAL_id = {}
         self.cur.execute(
-            'SELECT * FROM map_cve_oval WHERE cveid=?', self.query)
-        
+            'SELECT * FROM map_cve_oval WHERE cveid='+"\""+self.query[0]+"\"")
+
         self.rst = self.cur.fetchall()
 
         if self.rst is not None:
@@ -535,7 +535,7 @@ class vFeed(object):
                     'file': self.oval_url + str(self.data[0]),
                 }
                 self.cnt += 1
-            
+
         return self.OVAL_id
 
     def get_nessus(self):
@@ -545,7 +545,7 @@ class vFeed(object):
         self.cnt = 0
         self.NESSUS_id = {}
         self.cur.execute(
-            'SELECT * FROM map_cve_nessus WHERE cveid=?', self.query)
+            'SELECT * FROM map_cve_nessus WHERE cveid='+"\""+self.query[0]+"\"")
 
         for self.data in self.cur.fetchall():
             self.NESSUS_id[self.cnt] = {
@@ -564,8 +564,8 @@ class vFeed(object):
         self.cnt = 0
         self.NMAP_id = {}
         self.cur.execute(
-            'SELECT * FROM map_cve_nmap WHERE cveid=?', self.query)
-        
+            'SELECT * FROM map_cve_nmap WHERE cveid='+"\""+self.query[0]+"\"")
+
         for self.data in self.cur.fetchall():
             self.NMAP_id[self.cnt] = {
                 'file': str(self.data[0]),
@@ -582,8 +582,8 @@ class vFeed(object):
         self.cnt = 0
         self.OPENVAS_id = {}
         self.cur.execute(
-            'SELECT * FROM map_cve_openvas WHERE cveid=?', self.query)
-         
+            'SELECT * FROM map_cve_openvas WHERE cveid='+"\""+self.query[0]+"\"")
+
         for self.data in self.cur.fetchall():
             self.OPENVAS_id[self.cnt] = {
                 'id': str(self.data[0]),
@@ -602,7 +602,7 @@ class vFeed(object):
         self.cnt = 0
         self.EDB_id = {}
         self.cur.execute(
-            'SELECT * FROM map_cve_exploitdb WHERE cveid=?', self.query)
+            'SELECT * FROM map_cve_exploitdb WHERE cveid='+"\""+self.query[0]+"\"")
 
         for self.data in self.cur.fetchall():
             self.EDB_id[self.cnt] = {
@@ -620,7 +620,7 @@ class vFeed(object):
         self.cnt = 0
         self.MILWORM_id = {}
         self.cur.execute(
-            'SELECT * FROM map_cve_milw0rm WHERE cveid=?', self.query)
+            'SELECT * FROM map_cve_milw0rm WHERE cveid='+"\""+self.query[0]+"\"")
 
         for self.data in self.cur.fetchall():
             self.MILWORM_id[self.cnt] = {
@@ -637,7 +637,7 @@ class vFeed(object):
         self.cnt = 0
         self.SAINT_id = {}
         self.cur.execute(
-            'SELECT * FROM map_cve_saint WHERE cveid=?', self.query)
+            'SELECT * FROM map_cve_saint WHERE cveid='+"\""+self.query[0]+"\"")
 
         for self.data in self.cur.fetchall():
             self.SAINT_id[self.cnt] = {
@@ -656,7 +656,7 @@ class vFeed(object):
         self.cnt = 0
         self.MSF_id = {}
         self.cur.execute(
-            'SELECT * FROM map_cve_msf WHERE cveid=?', self.query)
+            'SELECT * FROM map_cve_msf WHERE cveid='+"\""+self.query[0]+"\"")
 
         for self.data in self.cur.fetchall():
             self.MSF_id[self.cnt] = {
@@ -674,7 +674,7 @@ class vFeed(object):
         self.cnt = 0
         self.D2_id = {}
         self.cur.execute(
-            'SELECT * FROM map_cve_d2 WHERE cveid=?', self.query)
+            'SELECT * FROM map_cve_d2 WHERE cveid='+"\""+self.query[0]+"\"")
 
         for self.data in self.cur.fetchall():
             self.D2_id[self.cnt] = {
@@ -690,8 +690,8 @@ class vFeed(object):
         '''
         self.cnt = 0
         self.SNORT_id = {}
-        self.cur.execute('SELECT * FROM map_cve_snort WHERE cveid=?', self.query)
-        
+        self.cur.execute('SELECT * FROM map_cve_snort WHERE cveid='+"\""+self.query[0]+"\"")
+
         for self.data in self.cur.fetchall():
             self.SNORT_id[self.cnt] = {
                 'id': str(self.data[0]),
@@ -708,8 +708,8 @@ class vFeed(object):
         '''
         self.cnt = 0
         self.SURICATA_id = {}
-        self.cur.execute('SELECT * FROM map_cve_suricata WHERE cveid=?', self.query)
-        
+        self.cur.execute('SELECT * FROM map_cve_suricata WHERE cveid='+"\""+self.query[0]+"\"")
+
         for self.data in self.cur.fetchall():
             self.SURICATA_id[self.cnt] = {
                 'id': str(self.data[0]),
@@ -727,7 +727,7 @@ class vFeed(object):
         self.cnt = 0
         self.HP_id = {}
         self.cur.execute(
-            'SELECT * FROM map_cve_hp WHERE cveid=?', self.query)
+            'SELECT * FROM map_cve_hp WHERE cveid='+"\""+self.query[0]+"\"")
 
         for self.data in self.cur.fetchall():
             self.HP_id[self.cnt] = {
